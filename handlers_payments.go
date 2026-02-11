@@ -19,7 +19,7 @@ func (a *app) handleCreatePayment(w http.ResponseWriter, r *http.Request) {
 		Currency         string                    `json:"currency"`
 		Platform         playcamp.PaymentPlatform  `json:"platform"`
 		DistributionType *playcamp.DistributionType `json:"distributionType,omitempty"`
-		PurchasedAt      string                    `json:"purchasedAt,omitempty"`
+		PurchasedAt      *string                   `json:"purchasedAt,omitempty"`
 		Receipt          *string                   `json:"receipt,omitempty"`
 		CampaignID       *string                   `json:"campaignId,omitempty"`
 		CreatorKey       *string                   `json:"creatorKey,omitempty"`
@@ -33,10 +33,15 @@ func (a *app) handleCreatePayment(w http.ResponseWriter, r *http.Request) {
 	isTest := body.IsTest != nil && *body.IsTest
 	sdk := a.getSDK(isTest)
 
-	// Default purchasedAt to current time in ISO 8601 format.
-	purchasedAt := body.PurchasedAt
-	if purchasedAt == "" {
-		purchasedAt = time.Now().UTC().Format(time.RFC3339)
+	// Parse purchasedAt or default to now.
+	purchasedAt := time.Now().UTC()
+	if body.PurchasedAt != nil && *body.PurchasedAt != "" {
+		parsed, err := time.Parse(time.RFC3339, *body.PurchasedAt)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "invalid purchasedAt format, expected RFC3339")
+			return
+		}
+		purchasedAt = parsed
 	}
 
 	payment, err := sdk.Payments.Create(r.Context(), playcamp.CreatePaymentParams{
