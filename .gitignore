@@ -1,6 +1,7 @@
 # Environment
 .env
 .pid
+CLAUDE.md
 
 # Binaries
 playcamp-go-sdk-example
