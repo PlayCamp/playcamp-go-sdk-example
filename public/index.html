@@ -1,0 +1,2580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayCamp SDK Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0d1117;
+      --bg-primary: #161b22;
+      --bg-secondary: #21262d;
+      --bg-tertiary: #30363d;
+      --bg-hover: #282e36;
+      --border: #30363d;
+      --border-light: #484f58;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --accent-cyan: #58d0ce;
+      --accent-cyan-dim: #2d9997;
+      --accent-orange: #ff7b54;
+      --accent-green: #3fb950;
+      --accent-red: #f85149;
+      --accent-purple: #a371f7;
+      --accent-blue: #58a6ff;
+      --glass: rgba(22, 27, 34, 0.8);
+      --glass-border: rgba(88, 208, 206, 0.15);
+      --shadow-glow: 0 0 40px rgba(88, 208, 206, 0.08);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(88, 208, 206, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(255, 123, 84, 0.06) 0%, transparent 50%),
+        var(--bg-deep);
+    }
+
+    .ambient-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+    }
+
+    /* Layout */
+    .app-container {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dim));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 16px rgba(88, 208, 206, 0.3);
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-subtitle {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Config Section */
+    .config-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .config-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .config-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .config-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(88, 208, 206, 0.1);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding: 8px 0;
+    }
+
+    .toggle-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: var(--text-secondary);
+      border-radius: 50%;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toggle.active {
+      background: var(--accent-orange);
+    }
+
+    .toggle.active::after {
+      left: 23px;
+      background: white;
+    }
+
+    .test-indicator {
+      display: none;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--accent-orange);
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      background: rgba(255, 123, 84, 0.15);
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+
+    .test-indicator.show { display: inline; }
+
+    /* Navigation */
+    .nav-section {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+    }
+
+    .nav-section::-webkit-scrollbar { width: 6px; }
+    .nav-section::-webkit-scrollbar-track { background: transparent; }
+    .nav-section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .nav-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 12px 6px;
+      font-weight: 600;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .nav-item.active {
+      background: rgba(88, 208, 206, 0.1);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: var(--accent-cyan);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+
+    .nav-item.active .nav-icon {
+      background: rgba(88, 208, 206, 0.2);
+    }
+
+    .nav-text {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .nav-item.active .nav-text {
+      color: var(--accent-cyan);
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 32px 40px;
+      max-width: 1200px;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title-icon {
+      font-size: 1.5rem;
+    }
+
+    .page-description {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--border-light);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+    }
+
+    .card-method {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .card-method.get { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+    .card-method.post { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+    .card-method.put { background: rgba(163, 113, 247, 0.15); color: var(--accent-purple); }
+    .card-method.delete { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      background: var(--bg-tertiary);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dim));
+      color: var(--bg-deep);
+      box-shadow: 0 4px 16px rgba(88, 208, 206, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(88, 208, 206, 0.35);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-light);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--accent-red), #d73a3a);
+      color: white;
+      box-shadow: 0 4px 16px rgba(248, 81, 73, 0.25);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(248, 81, 73, 0.35);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      width: auto;
+    }
+
+    /* Result Panel */
+    .result-panel {
+      margin-top: 20px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: none;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-panel.show { display: block; }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .status-code.success { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+    .status-code.error { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+
+    .result-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .result-body {
+      background: var(--bg-secondary);
+      padding: 16px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .result-body::-webkit-scrollbar { width: 6px; }
+    .result-body::-webkit-scrollbar-track { background: transparent; }
+    .result-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .result-body pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* List Items */
+    .list-container {
+      margin-top: 16px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .list-container::-webkit-scrollbar { width: 6px; }
+    .list-container::-webkit-scrollbar-track { background: transparent; }
+    .list-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .list-item {
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .list-item:hover {
+      background: var(--bg-hover);
+      border-color: var(--border);
+    }
+
+    .list-item.selected {
+      border-color: var(--accent-cyan);
+      background: rgba(88, 208, 206, 0.05);
+    }
+
+    .list-item-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent-cyan);
+      margin-bottom: 4px;
+    }
+
+    .list-item-detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Webhook Received Items */
+    .webhook-item {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .webhook-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .webhook-item-header:hover {
+      background: var(--bg-hover);
+    }
+
+    .webhook-item-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .webhook-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .webhook-status-dot.valid { background: var(--accent-green); }
+    .webhook-status-dot.invalid { background: var(--accent-red); }
+
+    .webhook-item-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+    }
+
+    .webhook-item-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .webhook-event-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .webhook-event-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(88, 208, 206, 0.15);
+      color: var(--accent-cyan);
+    }
+
+    .webhook-item-body {
+      display: none;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .webhook-item.expanded .webhook-item-body {
+      display: block;
+      animation: slideUp 0.2s ease;
+    }
+
+    .webhook-event-detail {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .webhook-event-detail:last-child {
+      margin-bottom: 0;
+    }
+
+    .webhook-event-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-orange);
+      margin-bottom: 8px;
+    }
+
+    .webhook-event-data {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .webhook-error {
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      background: rgba(248, 81, 73, 0.1);
+      border-radius: var(--radius-sm);
+    }
+
+    /* SDK Code Snippet */
+    .sdk-code {
+      margin-top: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .sdk-code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .sdk-code-label {
+      font-size: 0.7rem;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sdk-code-label::before {
+      content: '</>';
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      background: rgba(88, 208, 206, 0.15);
+      border-radius: 4px;
+    }
+
+    .sdk-code-toggle {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .sdk-code-toggle:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+    }
+
+    .sdk-code-block {
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      overflow-x: auto;
+      display: none;
+    }
+
+    .sdk-code-block.show {
+      display: block;
+      animation: slideUp 0.2s ease;
+    }
+
+    .sdk-code-block pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 0;
+      white-space: pre;
+    }
+
+    .sdk-code-block .keyword { color: var(--accent-purple); }
+    .sdk-code-block .function { color: var(--accent-blue); }
+    .sdk-code-block .string { color: var(--accent-green); }
+    .sdk-code-block .comment { color: var(--text-muted); font-style: italic; }
+    .sdk-code-block .variable { color: var(--accent-cyan); }
+    .sdk-code-block .property { color: var(--accent-orange); }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Footer */
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .version-info {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-section {
+        display: flex;
+        overflow-x: auto;
+        padding: 12px;
+        gap: 8px;
+      }
+
+      .nav-label { display: none; }
+
+      .nav-item {
+        padding: 10px 16px;
+        white-space: nowrap;
+        margin: 0;
+      }
+
+      .nav-item::before { display: none; }
+
+      .main-content {
+        padding: 24px 20px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg"></div>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">P</div>
+          <div class="logo-text">
+            <span class="logo-title">PlayCamp</span>
+            <span class="logo-subtitle">SDK Console</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-label">API Endpoint</div>
+        <input type="text" class="config-input" id="apiUrl" value="http://localhost:4000" placeholder="Base URL">
+        <div class="toggle-row">
+          <span class="toggle-label">
+            Test Mode
+            <span class="test-indicator" id="testBadge">TEST</span>
+          </span>
+          <div class="toggle" id="testToggle" onclick="toggleTestMode()"></div>
+        </div>
+      </div>
+
+      <nav class="nav-section">
+        <div class="nav-label">Resources</div>
+
+        <div class="nav-item active" onclick="switchTab('campaigns')">
+          <div class="nav-icon">C</div>
+          <span class="nav-text">Campaigns</span>
+          <span class="nav-badge">3</span>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('creators')">
+          <div class="nav-icon">U</div>
+          <span class="nav-text">Creators</span>
+          <span class="nav-badge">3</span>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('coupons')">
+          <div class="nav-icon">T</div>
+          <span class="nav-text">Coupons</span>
+          <span class="nav-badge">3</span>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('sponsors')">
+          <div class="nav-icon">S</div>
+          <span class="nav-text">Sponsors</span>
+          <span class="nav-badge">5</span>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('payments')">
+          <div class="nav-icon">$</div>
+          <span class="nav-text">Payments</span>
+          <span class="nav-badge">4</span>
+        </div>
+
+        <div class="nav-item" onclick="switchTab('webhooks')">
+          <div class="nav-icon">W</div>
+          <span class="nav-text">Webhooks</span>
+          <span class="nav-badge">7</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="version-info">
+          <div class="version-dot"></div>
+          Server API v1.0
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Campaigns Tab -->
+      <div id="tab-campaigns" class="tab-content active">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">C</span>
+            Campaigns
+          </h1>
+          <p class="page-description">View and manage campaign information</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Campaign List
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Page</label>
+                  <input type="number" class="form-input" id="campaignPage" value="1" min="1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Limit</label>
+                  <input type="number" class="form-input" id="campaignLimit" value="20" min="1" max="100">
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="listCampaigns()">Load Campaigns</button>
+              <div id="campaignList" class="list-container"></div>
+              <div id="campaignResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Campaigns</span>.<span class="function">List</span>(<span class="variable">ctx</span>, &<span class="variable">playcamp</span>.<span class="function">PaginationOptions</span>{
+  <span class="property">Page</span>:  <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">1</span>),
+  <span class="property">Limit</span>: <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">20</span>),
+})
+
+<span class="comment">// result.Data: []Campaign</span>
+<span class="comment">// result.Pagination: Pagination{Page, Limit, Total}</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Campaign Details
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Campaign ID</label>
+                <input type="text" class="form-input" id="campaignId" placeholder="Enter campaign ID">
+              </div>
+              <button class="btn btn-primary" onclick="getCampaign()">Get Campaign</button>
+              <div id="campaignDetailResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">campaign</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Campaigns</span>.<span class="function">Get</span>(<span class="variable">ctx</span>, <span class="string">"campaignId"</span>)
+
+<span class="comment">// campaign.CampaignID, campaign.CampaignName</span>
+<span class="comment">// campaign.Status, campaign.StartDate, campaign.EndDate</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Campaign Creators
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Campaign ID</label>
+                <input type="text" class="form-input" id="campaignCreatorsId" placeholder="Enter campaign ID">
+              </div>
+              <button class="btn btn-primary" onclick="getCampaignCreators()">Get Creators</button>
+              <div id="campaignCreatorsResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">creators</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Campaigns</span>.<span class="function">GetCreators</span>(<span class="variable">ctx</span>, <span class="string">"campaignId"</span>)
+
+<span class="comment">// creators[i].CreatorKey, creators[i].CreatorName</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Creators Tab -->
+      <div id="tab-creators" class="tab-content">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">U</span>
+            Creators
+          </h1>
+          <p class="page-description">Search and view creator information</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Search Creators
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Keyword</label>
+                <input type="text" class="form-input" id="creatorKeyword" placeholder="Search keyword">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Limit</label>
+                <input type="number" class="form-input" id="creatorLimit" value="20" min="1" max="100">
+              </div>
+              <button class="btn btn-primary" onclick="searchCreators()">Search</button>
+              <div id="creatorSearchList" class="list-container"></div>
+              <div id="creatorSearchResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">creators</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Creators</span>.<span class="function">Search</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">SearchCreatorsParams</span>{
+  <span class="property">Keyword</span>: <span class="string">"gaming"</span>,
+  <span class="property">Limit</span>:   <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">20</span>),
+})
+
+<span class="comment">// creators[i].CreatorKey, creators[i].CreatorName</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Creator Details
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Creator Key</label>
+                <input type="text" class="form-input" id="creatorKey" placeholder="e.g., TEST1" maxlength="5">
+                <div class="form-hint">5-character creator key</div>
+              </div>
+              <button class="btn btn-primary" onclick="getCreator()">Get Creator</button>
+              <div id="creatorDetailResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">creator</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Creators</span>.<span class="function">Get</span>(<span class="variable">ctx</span>, <span class="string">"ABCDE"</span>)
+
+<span class="comment">// creator.CreatorID, creator.CreatorName</span>
+<span class="comment">// creator.Genre, creator.Status</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Creator Coupons
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Creator Key</label>
+                <input type="text" class="form-input" id="creatorCouponsKey" placeholder="Creator Key" maxlength="5">
+              </div>
+              <button class="btn btn-primary" onclick="getCreatorCoupons()">Get Coupons</button>
+              <div id="creatorCouponsResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">coupons</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Creators</span>.<span class="function">GetCoupons</span>(<span class="variable">ctx</span>, <span class="string">"ABCDE"</span>)
+
+<span class="comment">// coupons[i].CouponCode, coupons[i].Status</span>
+<span class="comment">// Status: "ACTIVE" | "EXHAUSTED" | "EXPIRED"</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coupons Tab -->
+      <div id="tab-coupons" class="tab-content">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">T</span>
+            Coupons
+          </h1>
+          <p class="page-description">Validate, redeem, and view coupon usage history</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Validate Coupon
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Coupon Code</label>
+                <input type="text" class="form-input" id="validateCouponCode" placeholder="Enter coupon code">
+              </div>
+              <div class="form-group">
+                <label class="form-label">User ID (Optional)</label>
+                <input type="text" class="form-input" id="validateUserId" placeholder="User ID">
+              </div>
+              <button class="btn btn-primary" onclick="validateCoupon()">Validate</button>
+              <div id="validateCouponResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Coupons</span>.<span class="function">Validate</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">ValidateCouponServerParams</span>{
+  <span class="property">CouponCode</span>: <span class="string">"CAMP-CODE-001"</span>,
+  <span class="property">UserID</span>:     <span class="string">"user_123"</span>,
+})
+
+<span class="comment">// result.Valid, result.ErrorCode, result.ItemName</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Redeem Coupon
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Coupon Code</label>
+                <input type="text" class="form-input" id="redeemCouponCode" placeholder="Enter coupon code">
+              </div>
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="redeemUserId" placeholder="User ID" value="test_user">
+              </div>
+              <button class="btn btn-primary" onclick="redeemCoupon()">Redeem Coupon</button>
+              <div id="redeemCouponResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Coupons</span>.<span class="function">Redeem</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">RedeemCouponParams</span>{
+  <span class="property">CouponCode</span>: <span class="string">"CAMP-CODE-001"</span>,
+  <span class="property">UserID</span>:     <span class="string">"user_123"</span>,
+})
+
+<span class="comment">// result.Success, result.UsageID, result.Reward</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Coupon Usage History
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="couponHistoryUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Page</label>
+                <input type="number" class="form-input" id="couponHistoryPage" value="1" min="1">
+              </div>
+              <button class="btn btn-primary" onclick="getCouponHistory()">Get History</button>
+              <div id="couponHistoryResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Coupons</span>.<span class="function">GetUserHistory</span>(<span class="variable">ctx</span>, <span class="string">"user_123"</span>, &<span class="variable">playcamp</span>.<span class="function">PaginationOptions</span>{
+  <span class="property">Page</span>:  <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">1</span>),
+  <span class="property">Limit</span>: <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">20</span>),
+})
+
+<span class="comment">// result.Data[i].CouponCode, result.Data[i].UsedAt</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sponsors Tab -->
+      <div id="tab-sponsors" class="tab-content">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">S</span>
+            Sponsors
+          </h1>
+          <p class="page-description">Create, update, and delete sponsor relationships</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Get Sponsor
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="sponsorGetUserId" placeholder="User ID" value="test_user">
+              </div>
+              <button class="btn btn-primary" onclick="getSponsor()">Get Sponsor</button>
+              <div id="sponsorGetResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">sponsors</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Sponsors</span>.<span class="function">GetByUser</span>(<span class="variable">ctx</span>, <span class="string">"user_123"</span>)
+
+<span class="comment">// sponsors[i].CampaignID, sponsors[i].CreatorKey</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Create Sponsor
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="sponsorCreateUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Creator Key</label>
+                <input type="text" class="form-input" id="sponsorCreatorKey" placeholder="Creator Key" maxlength="5">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campaign ID (Optional)</label>
+                <input type="text" class="form-input" id="sponsorCampaignId" placeholder="Campaign ID">
+              </div>
+              <button class="btn btn-primary" onclick="createSponsor()">Create Sponsor</button>
+              <div id="sponsorCreateResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">sponsor</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Sponsors</span>.<span class="function">Create</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">CreateSponsorParams</span>{
+  <span class="property">UserID</span>:     <span class="string">"user_123"</span>,
+  <span class="property">CreatorKey</span>: <span class="string">"ABCDE"</span>,
+  <span class="property">CampaignID</span>: <span class="variable">playcamp</span>.<span class="function">String</span>(<span class="string">"campaign_001"</span>),
+})</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Update Sponsor
+              </div>
+              <span class="card-method put">PUT</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="sponsorUpdateUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campaign ID <span style="color: #6b7280; font-weight: normal;">(optional)</span></label>
+                <input type="text" class="form-input" id="sponsorUpdateCampaignId" placeholder="Campaign ID (auto-selects active campaign if empty)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Creator Key</label>
+                <input type="text" class="form-input" id="sponsorNewCreatorKey" placeholder="New Creator Key" maxlength="5">
+              </div>
+              <button class="btn btn-primary" onclick="updateSponsor()">Update Sponsor</button>
+              <div id="sponsorUpdateResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">sponsor</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Sponsors</span>.<span class="function">Update</span>(<span class="variable">ctx</span>, <span class="string">"user_123"</span>, <span class="variable">playcamp</span>.<span class="function">UpdateSponsorParams</span>{
+  <span class="property">CampaignID</span>:    <span class="variable">playcamp</span>.<span class="function">String</span>(<span class="string">"campaign_001"</span>), <span class="comment">// optional</span>
+  <span class="property">NewCreatorKey</span>: <span class="string">"FGHIJ"</span>,
+})</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Delete Sponsor
+              </div>
+              <span class="card-method delete">DELETE</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="sponsorDeleteUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campaign ID (Optional)</label>
+                <input type="text" class="form-input" id="sponsorDeleteCampaignId" placeholder="Campaign ID">
+              </div>
+              <button class="btn btn-danger" onclick="deleteSponsor()">Delete Sponsor</button>
+              <div id="sponsorDeleteResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Sponsors</span>.<span class="function">Delete</span>(<span class="variable">ctx</span>, <span class="string">"user_123"</span>, &<span class="variable">playcamp</span>.<span class="function">DeleteSponsorOptions</span>{
+  <span class="property">CampaignID</span>: <span class="variable">playcamp</span>.<span class="function">String</span>(<span class="string">"campaign_001"</span>),
+})</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Sponsor Change History
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="sponsorHistoryUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campaign ID (Optional)</label>
+                <input type="text" class="form-input" id="sponsorHistoryCampaignId" placeholder="Campaign ID">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Page</label>
+                <input type="number" class="form-input" id="sponsorHistoryPage" value="1" min="1">
+              </div>
+              <button class="btn btn-primary" onclick="getSponsorHistory()">Get History</button>
+              <div id="sponsorHistoryResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Sponsors</span>.<span class="function">GetHistory</span>(<span class="variable">ctx</span>, <span class="string">"user_123"</span>, &<span class="variable">playcamp</span>.<span class="function">GetSponsorHistoryOptions</span>{
+  <span class="property">CampaignID</span>: <span class="variable">playcamp</span>.<span class="function">String</span>(<span class="string">"campaign_001"</span>),
+  <span class="property">Page</span>:       <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">1</span>),
+})
+
+<span class="comment">// result.Data[i].Action: "CREATED" | "CHANGED" | "ENDED"</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments Tab -->
+      <div id="tab-payments" class="tab-content">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">$</span>
+            Payments
+          </h1>
+          <p class="page-description">Create, view, and refund payments</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Create Payment
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">User ID</label>
+                  <input type="text" class="form-input" id="paymentUserId" placeholder="User ID" value="test_user">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Transaction ID</label>
+                  <input type="text" class="form-input" id="paymentTxnId" placeholder="Transaction ID">
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-small" onclick="generateTxnId()" style="margin-bottom: 16px; width: auto;">Generate ID</button>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Product ID</label>
+                  <input type="text" class="form-input" id="paymentProductId" placeholder="Product ID" value="diamond_100">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Product Name</label>
+                  <input type="text" class="form-input" id="paymentProductName" placeholder="Product Name" value="100 Diamonds">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Amount</label>
+                  <input type="number" class="form-input" id="paymentAmount" placeholder="Amount" value="4900">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Currency</label>
+                  <select class="form-input" id="paymentCurrency">
+                    <option value="KRW">KRW</option>
+                    <option value="USD">USD</option>
+                    <option value="JPY">JPY</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Platform</label>
+                <select class="form-input" id="paymentPlatform">
+                  <option value="iOS">iOS</option>
+                  <option value="Android">Android</option>
+                  <option value="Web">Web</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="createPayment()">Create Payment</button>
+              <div id="paymentCreateResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">payment</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">Create</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">CreatePaymentParams</span>{
+  <span class="property">UserID</span>:        <span class="string">"user_123"</span>,
+  <span class="property">TransactionID</span>: <span class="string">"txn_abc123"</span>,
+  <span class="property">ProductID</span>:     <span class="string">"diamond_100"</span>,
+  <span class="property">Amount</span>:        <span class="string">4900</span>,
+  <span class="property">Currency</span>:      <span class="string">"KRW"</span>,
+  <span class="property">Platform</span>:      <span class="variable">playcamp</span>.<span class="property">PaymentPlatformIOS</span>,
+  <span class="property">PurchasedAt</span>:   <span class="variable">time</span>.<span class="function">Now</span>().<span class="function">UTC</span>().<span class="function">Format</span>(<span class="variable">time</span>.<span class="property">RFC3339</span>),
+})</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Get Payment
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Transaction ID</label>
+                <input type="text" class="form-input" id="paymentGetTxnId" placeholder="Transaction ID">
+              </div>
+              <button class="btn btn-primary" onclick="getPayment()">Get Payment</button>
+              <div id="paymentGetResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">payment</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">Get</span>(<span class="variable">ctx</span>, <span class="string">"txn_abc123"</span>)
+
+<span class="comment">// payment.Status: "COMPLETED" | "REFUNDED" | "CANCELLED"</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Payment History
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="paymentHistoryUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Page</label>
+                <input type="number" class="form-input" id="paymentHistoryPage" value="1" min="1">
+              </div>
+              <button class="btn btn-primary" onclick="getPaymentHistory()">Get History</button>
+              <div id="paymentHistoryResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">ListByUser</span>(<span class="variable">ctx</span>, <span class="string">"user_123"</span>, &<span class="variable">playcamp</span>.<span class="function">PaginationOptions</span>{
+  <span class="property">Page</span>:  <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">1</span>),
+  <span class="property">Limit</span>: <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">20</span>),
+})
+
+<span class="comment">// result.Data[i].TransactionID, result.Data[i].Amount</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Refund Payment
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Transaction ID</label>
+                <input type="text" class="form-input" id="paymentRefundTxnId" placeholder="Transaction ID">
+              </div>
+              <button class="btn btn-danger" onclick="refundPayment()">Refund Payment</button>
+              <div id="paymentRefundResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">payment</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">Refund</span>(<span class="variable">ctx</span>, <span class="string">"txn_abc123"</span>, <span class="keyword">nil</span>)
+
+<span class="comment">// payment.Status == "REFUNDED"</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Webhooks Tab -->
+      <div id="tab-webhooks" class="tab-content">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">W</span>
+            Webhooks
+          </h1>
+          <p class="page-description">Create, manage, and test webhooks</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Webhook List
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-primary" onclick="listWebhooks()">Load Webhooks</button>
+              <div id="webhookList" class="list-container"></div>
+              <div id="webhookListResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">webhooks</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webhooks</span>.<span class="function">List</span>(<span class="variable">ctx</span>)
+
+<span class="comment">// webhooks[i].ID, webhooks[i].EventType, webhooks[i].URL</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Create Webhook
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Event Type</label>
+                <select class="form-input" id="webhookEventType">
+                  <option value="coupon.redeemed">coupon.redeemed</option>
+                  <option value="payment.created">payment.created</option>
+                  <option value="payment.refunded">payment.refunded</option>
+                  <option value="sponsor.created">sponsor.created</option>
+                  <option value="sponsor.changed">sponsor.changed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">URL</label>
+                <input type="text" class="form-input" id="webhookUrl" placeholder="https://example.com/webhook">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Retry Count</label>
+                  <input type="number" class="form-input" id="webhookRetryCount" value="3" min="0" max="10">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Timeout (ms)</label>
+                  <input type="number" class="form-input" id="webhookTimeout" value="5000" min="1000" max="30000">
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="createWebhook()">Create Webhook</button>
+              <div id="webhookCreateResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">webhook</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webhooks</span>.<span class="function">Create</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">CreateWebhookParams</span>{
+  <span class="property">EventType</span>:  <span class="variable">playcamp</span>.<span class="property">WebhookEventCouponRedeemed</span>,
+  <span class="property">URL</span>:        <span class="string">"https://example.com/webhook"</span>,
+  <span class="property">RetryCount</span>: <span class="variable">playcamp</span>.<span class="function">Int</span>(<span class="string">3</span>),
+})
+
+<span class="comment">// IMPORTANT: webhook.Secret is only returned once!</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Update Webhook
+              </div>
+              <span class="card-method put">PUT</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Webhook ID</label>
+                <input type="number" class="form-input" id="webhookUpdateId" placeholder="Webhook ID">
+              </div>
+              <div class="form-group">
+                <label class="form-label">URL (Optional)</label>
+                <input type="text" class="form-input" id="webhookUpdateUrl" placeholder="New URL">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-input" id="webhookUpdateActive">
+                  <option value="">-- No Change --</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="updateWebhook()">Update Webhook</button>
+              <div id="webhookUpdateResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">webhook</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webhooks</span>.<span class="function">Update</span>(<span class="variable">ctx</span>, <span class="variable">webhookID</span>, <span class="variable">playcamp</span>.<span class="function">UpdateWebhookParams</span>{
+  <span class="property">URL</span>:      <span class="variable">playcamp</span>.<span class="function">String</span>(<span class="string">"https://new-url.com/webhook"</span>),
+  <span class="property">IsActive</span>: <span class="variable">playcamp</span>.<span class="function">Bool</span>(<span class="keyword">true</span>),
+})</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Delete Webhook
+              </div>
+              <span class="card-method delete">DELETE</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Webhook ID</label>
+                <input type="number" class="form-input" id="webhookDeleteId" placeholder="Webhook ID">
+              </div>
+              <button class="btn btn-danger" onclick="deleteWebhook()">Delete Webhook</button>
+              <div id="webhookDeleteResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webhooks</span>.<span class="function">Delete</span>(<span class="variable">ctx</span>, <span class="variable">webhookID</span>)</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Webhook Logs
+              </div>
+              <span class="card-method get">GET</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Webhook ID</label>
+                <input type="number" class="form-input" id="webhookLogsId" placeholder="Webhook ID">
+              </div>
+              <button class="btn btn-primary" onclick="getWebhookLogs()">Get Logs</button>
+              <div id="webhookLogsResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">logs</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webhooks</span>.<span class="function">GetLogs</span>(<span class="variable">ctx</span>, <span class="variable">webhookID</span>)
+
+<span class="comment">// logs[i].Status: "SUCCESS" | "FAILED" | "RETRYING"</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Test Webhook
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Webhook ID</label>
+                <input type="number" class="form-input" id="webhookTestId" placeholder="Webhook ID">
+              </div>
+              <button class="btn btn-secondary" onclick="testWebhook()">Send Test</button>
+              <div id="webhookTestResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webhooks</span>.<span class="function">Test</span>(<span class="variable">ctx</span>, <span class="variable">webhookID</span>)
+
+<span class="comment">// result.Success, result.ResponseStatus, result.Error</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Webhook Simulation
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Event Type</label>
+                <select class="form-input" id="simulateEventType">
+                  <option value="coupon.redeemed">coupon.redeemed</option>
+                  <option value="payment.created">payment.created</option>
+                  <option value="payment.refunded">payment.refunded</option>
+                  <option value="sponsor.created">sponsor.created</option>
+                  <option value="sponsor.changed">sponsor.changed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sample Data</label>
+                <textarea class="form-input" id="simulateData" rows="4" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">{"couponCode": "TEST123", "userId": "test_user"}</textarea>
+              </div>
+              <button class="btn btn-primary" onclick="simulateWebhook()">Simulate Webhook</button>
+              <div class="form-hint">Simulate webhook events locally</div>
+              <div id="webhookSimulateResult" class="result-panel"></div>
+            </div>
+          </div>
+
+          <!-- Received Webhooks (full width) -->
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot" style="background: var(--accent-green);"></div>
+                Received Webhooks
+                <span id="webhookReceivedCount" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"></span>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
+                  <input type="checkbox" id="autoRefreshToggle" checked style="accent-color: var(--accent-cyan);">
+                  Auto Refresh
+                </label>
+                <button class="btn btn-secondary btn-small" onclick="loadReceivedWebhooks()">Refresh</button>
+                <button class="btn btn-danger btn-small" onclick="clearReceivedWebhooks()">Clear</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="receivedWebhooksList" style="max-height: 400px; overflow-y: auto;">
+                <div class="empty-state">Run a webhook test to see results here</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Config
+    function getApiUrl() {
+      return document.getElementById('apiUrl').value || 'http://localhost:4000';
+    }
+
+    function isTestMode() {
+      return document.getElementById('testToggle').classList.contains('active');
+    }
+
+    function toggleTestMode() {
+      const toggle = document.getElementById('testToggle');
+      const badge = document.getElementById('testBadge');
+      toggle.classList.toggle('active');
+      badge.classList.toggle('show');
+    }
+
+    // Toggle SDK code visibility
+    function toggleCode(el) {
+      const codeBlock = el.parentElement.nextElementSibling;
+      const isShown = codeBlock.classList.toggle('show');
+      el.textContent = isShown ? 'Hide' : 'Show';
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      document.querySelector(`.nav-item[onclick*="${tabName}"]`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    // API helper
+    async function api(method, path, body = null) {
+      const startTime = Date.now();
+      const url = getApiUrl() + path;
+
+      const options = {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : {};
+        const duration = Date.now() - startTime;
+        return { data, status: res.status, duration, ok: res.ok };
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        return { data: { error: error.message }, status: 0, duration, ok: false };
+      }
+    }
+
+    // Show result
+    function showResult(elementId, response) {
+      const el = document.getElementById(elementId);
+      el.classList.add('show');
+
+      el.innerHTML = `
+        <div class="result-header">
+          <div class="result-status">
+            <span class="status-code ${response.ok ? 'success' : 'error'}">${response.status}</span>
+          </div>
+          <span class="result-time">${response.duration}ms</span>
+        </div>
+        <div class="result-body">
+          <pre>${JSON.stringify(response.data, null, 2)}</pre>
+        </div>
+      `;
+    }
+
+    // Generate transaction ID
+    function generateTxnId() {
+      document.getElementById('paymentTxnId').value = 'txn_' + Date.now();
+    }
+
+    // ============================================
+    // Campaigns
+    // ============================================
+    async function listCampaigns() {
+      const page = document.getElementById('campaignPage').value;
+      const limit = document.getElementById('campaignLimit').value;
+      const testMode = isTestMode() ? '&isTest=true' : '';
+
+      const response = await api('GET', `/api/campaigns?page=${page}&limit=${limit}${testMode}`);
+      showResult('campaignResult', response);
+
+      const container = document.getElementById('campaignList');
+      if (response.ok && response.data.data) {
+        const campaigns = response.data.data;
+        container.innerHTML = campaigns.map(c => `
+          <div class="list-item" onclick="selectCampaign('${c.campaignId}')">
+            <div class="list-item-title">${c.campaignId}</div>
+            <div class="list-item-detail">Status: ${c.status}</div>
+          </div>
+        `).join('') || '<div class="empty-state">No campaigns found</div>';
+      }
+    }
+
+    function selectCampaign(id) {
+      document.getElementById('campaignId').value = id;
+      document.getElementById('campaignCreatorsId').value = id;
+      document.getElementById('sponsorCampaignId').value = id;
+      document.getElementById('sponsorUpdateCampaignId').value = id;
+      document.getElementById('sponsorDeleteCampaignId').value = id;
+      document.getElementById('sponsorHistoryCampaignId').value = id;
+
+      document.querySelectorAll('#campaignList .list-item').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('.list-item-title').textContent === id);
+      });
+    }
+
+    async function getCampaign() {
+      const id = document.getElementById('campaignId').value;
+      if (!id) return alert('Please enter Campaign ID');
+
+      const testMode = isTestMode() ? '?isTest=true' : '';
+      const response = await api('GET', `/api/campaigns/${id}${testMode}`);
+      showResult('campaignDetailResult', response);
+    }
+
+    async function getCampaignCreators() {
+      const id = document.getElementById('campaignCreatorsId').value;
+      if (!id) return alert('Please enter Campaign ID');
+
+      const testMode = isTestMode() ? '?isTest=true' : '';
+      const response = await api('GET', `/api/campaigns/${id}/creators${testMode}`);
+      showResult('campaignCreatorsResult', response);
+    }
+
+    // ============================================
+    // Creators
+    // ============================================
+    async function searchCreators() {
+      const keyword = document.getElementById('creatorKeyword').value;
+      if (!keyword) return alert('Please enter search keyword');
+
+      const limit = document.getElementById('creatorLimit').value;
+      const testMode = isTestMode() ? '&isTest=true' : '';
+
+      const response = await api('GET', `/api/creators/search?keyword=${keyword}&limit=${limit}${testMode}`);
+      showResult('creatorSearchResult', response);
+
+      const container = document.getElementById('creatorSearchList');
+      if (response.ok && response.data.data) {
+        const creators = response.data.data;
+        container.innerHTML = creators.map(c => `
+          <div class="list-item" onclick="selectCreator('${c.creatorKey}')">
+            <div class="list-item-title">${c.creatorKey}</div>
+            <div class="list-item-detail">${c.creatorName}</div>
+          </div>
+        `).join('') || '<div class="empty-state">No creators found</div>';
+      }
+    }
+
+    function selectCreator(key) {
+      document.getElementById('creatorKey').value = key;
+      document.getElementById('creatorCouponsKey').value = key;
+      document.getElementById('sponsorCreatorKey').value = key;
+      document.getElementById('sponsorNewCreatorKey').value = key;
+
+      document.querySelectorAll('#creatorSearchList .list-item').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('.list-item-title').textContent === key);
+      });
+    }
+
+    async function getCreator() {
+      const key = document.getElementById('creatorKey').value;
+      if (!key) return alert('Please enter Creator Key');
+
+      const testMode = isTestMode() ? '?isTest=true' : '';
+      const response = await api('GET', `/api/creators/${key}${testMode}`);
+      showResult('creatorDetailResult', response);
+    }
+
+    async function getCreatorCoupons() {
+      const key = document.getElementById('creatorCouponsKey').value;
+      if (!key) return alert('Please enter Creator Key');
+
+      const testMode = isTestMode() ? '?isTest=true' : '';
+      const response = await api('GET', `/api/creators/${key}/coupons${testMode}`);
+      showResult('creatorCouponsResult', response);
+    }
+
+    // ============================================
+    // Coupons
+    // ============================================
+    async function validateCoupon() {
+      const code = document.getElementById('validateCouponCode').value;
+      if (!code) return alert('Please enter Coupon code');
+
+      const userId = document.getElementById('validateUserId').value;
+      const body = { couponCode: code };
+      if (userId) body.userId = userId;
+
+      const response = await api('POST', '/api/coupons/validate', body);
+      showResult('validateCouponResult', response);
+    }
+
+    async function redeemCoupon() {
+      const code = document.getElementById('redeemCouponCode').value;
+      const userId = document.getElementById('redeemUserId').value;
+      if (!code || !userId) return alert('Please enter Coupon code and User ID');
+
+      const response = await api('POST', '/api/coupons/redeem', { couponCode: code, userId });
+      showResult('redeemCouponResult', response);
+    }
+
+    async function getCouponHistory() {
+      const userId = document.getElementById('couponHistoryUserId').value;
+      if (!userId) return alert('Please enter User ID');
+
+      const page = document.getElementById('couponHistoryPage').value;
+      const response = await api('GET', `/api/coupons/user/${userId}?page=${page}`);
+      showResult('couponHistoryResult', response);
+    }
+
+    // ============================================
+    // Sponsors
+    // ============================================
+    async function getSponsor() {
+      const userId = document.getElementById('sponsorGetUserId').value;
+      if (!userId) return alert('Please enter User ID');
+
+      const response = await api('GET', `/api/sponsors/${userId}`);
+      showResult('sponsorGetResult', response);
+    }
+
+    async function createSponsor() {
+      const userId = document.getElementById('sponsorCreateUserId').value;
+      const creatorKey = document.getElementById('sponsorCreatorKey').value;
+      const campaignId = document.getElementById('sponsorCampaignId').value;
+
+      if (!userId || !creatorKey) return alert('Please enter User ID and Creator Key');
+
+      const body = { userId, creatorKey };
+      if (campaignId) body.campaignId = campaignId;
+
+      const response = await api('POST', '/api/sponsors', body);
+      showResult('sponsorCreateResult', response);
+    }
+
+    async function updateSponsor() {
+      const userId = document.getElementById('sponsorUpdateUserId').value;
+      const campaignId = document.getElementById('sponsorUpdateCampaignId').value;
+      const newCreatorKey = document.getElementById('sponsorNewCreatorKey').value;
+
+      if (!userId || !newCreatorKey) {
+        return alert('Please enter User ID and New Creator Key');
+      }
+
+      const body = { newCreatorKey };
+      if (campaignId) body.campaignId = campaignId;
+
+      const response = await api('PUT', `/api/sponsors/${userId}`, body);
+      showResult('sponsorUpdateResult', response);
+    }
+
+    async function deleteSponsor() {
+      const userId = document.getElementById('sponsorDeleteUserId').value;
+      if (!userId) return alert('Please enter User ID');
+
+      if (!confirm('Are you sure you want to delete?')) return;
+
+      const campaignId = document.getElementById('sponsorDeleteCampaignId').value;
+      const query = campaignId ? `?campaignId=${campaignId}` : '';
+      const response = await api('DELETE', `/api/sponsors/${userId}${query}`);
+      showResult('sponsorDeleteResult', response);
+    }
+
+    async function getSponsorHistory() {
+      const userId = document.getElementById('sponsorHistoryUserId').value;
+      if (!userId) return alert('Please enter User ID');
+
+      const page = document.getElementById('sponsorHistoryPage').value;
+      const campaignId = document.getElementById('sponsorHistoryCampaignId').value;
+      let query = `?page=${page}`;
+      if (campaignId) query += `&campaignId=${campaignId}`;
+
+      const response = await api('GET', `/api/sponsors/${userId}/history${query}`);
+      showResult('sponsorHistoryResult', response);
+    }
+
+    // ============================================
+    // Payments
+    // ============================================
+    async function createPayment() {
+      const userId = document.getElementById('paymentUserId').value;
+      const transactionId = document.getElementById('paymentTxnId').value;
+      const productId = document.getElementById('paymentProductId').value;
+      const productName = document.getElementById('paymentProductName').value;
+      const amount = parseFloat(document.getElementById('paymentAmount').value);
+      const currency = document.getElementById('paymentCurrency').value;
+      const platform = document.getElementById('paymentPlatform').value;
+
+      if (!userId || !transactionId || !productId || !amount) {
+        return alert('Please fill in all required fields');
+      }
+
+      const response = await api('POST', '/api/payments', {
+        userId,
+        transactionId,
+        productId,
+        productName,
+        amount,
+        currency,
+        platform,
+      });
+      showResult('paymentCreateResult', response);
+
+      if (response.ok) {
+        document.getElementById('paymentGetTxnId').value = transactionId;
+        document.getElementById('paymentRefundTxnId').value = transactionId;
+      }
+    }
+
+    async function getPayment() {
+      const txnId = document.getElementById('paymentGetTxnId').value;
+      if (!txnId) return alert('Please enter Transaction ID');
+
+      const response = await api('GET', `/api/payments/${txnId}`);
+      showResult('paymentGetResult', response);
+    }
+
+    async function getPaymentHistory() {
+      const userId = document.getElementById('paymentHistoryUserId').value;
+      if (!userId) return alert('Please enter User ID');
+
+      const page = document.getElementById('paymentHistoryPage').value;
+      const response = await api('GET', `/api/payments/user/${userId}?page=${page}`);
+      showResult('paymentHistoryResult', response);
+    }
+
+    async function refundPayment() {
+      const txnId = document.getElementById('paymentRefundTxnId').value;
+      if (!txnId) return alert('Please enter Transaction ID');
+
+      if (!confirm('Are you sure you want to refund?')) return;
+
+      const response = await api('POST', `/api/payments/${txnId}/refund`);
+      showResult('paymentRefundResult', response);
+    }
+
+    // ============================================
+    // Webhooks
+    // ============================================
+    async function listWebhooks() {
+      const response = await api('GET', '/api/webhooks');
+      showResult('webhookListResult', response);
+
+      const container = document.getElementById('webhookList');
+      if (response.ok && response.data.data) {
+        const webhooks = response.data.data;
+        container.innerHTML = webhooks.map(w => `
+          <div class="list-item" onclick="selectWebhook(${w.id})">
+            <div class="list-item-title">#${w.id} - ${w.eventType}</div>
+            <div class="list-item-detail">${w.url} (${w.isActive ? 'Active' : 'Inactive'})</div>
+          </div>
+        `).join('') || '<div class="empty-state">No webhooks found</div>';
+      }
+    }
+
+    function selectWebhook(id) {
+      document.getElementById('webhookUpdateId').value = id;
+      document.getElementById('webhookDeleteId').value = id;
+      document.getElementById('webhookLogsId').value = id;
+      document.getElementById('webhookTestId').value = id;
+
+      document.querySelectorAll('#webhookList .list-item').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('.list-item-title').textContent.startsWith(`#${id}`));
+      });
+    }
+
+    async function createWebhook() {
+      const eventType = document.getElementById('webhookEventType').value;
+      const url = document.getElementById('webhookUrl').value;
+      const retryCount = parseInt(document.getElementById('webhookRetryCount').value);
+      const timeoutMs = parseInt(document.getElementById('webhookTimeout').value);
+
+      if (!eventType || !url) return alert('Please enter Event Type and URL');
+
+      const response = await api('POST', '/api/webhooks', {
+        eventType,
+        url,
+        retryCount,
+        timeoutMs,
+      });
+      showResult('webhookCreateResult', response);
+    }
+
+    async function updateWebhook() {
+      const id = document.getElementById('webhookUpdateId').value;
+      if (!id) return alert('Please enter Webhook ID');
+
+      const url = document.getElementById('webhookUpdateUrl').value;
+      const isActiveValue = document.getElementById('webhookUpdateActive').value;
+
+      const body = {};
+      if (url) body.url = url;
+      if (isActiveValue !== '') body.isActive = isActiveValue === 'true';
+
+      const response = await api('PUT', `/api/webhooks/${id}`, body);
+      showResult('webhookUpdateResult', response);
+    }
+
+    async function deleteWebhook() {
+      const id = document.getElementById('webhookDeleteId').value;
+      if (!id) return alert('Please enter Webhook ID');
+
+      if (!confirm('Are you sure you want to delete?')) return;
+
+      const response = await api('DELETE', `/api/webhooks/${id}`);
+      showResult('webhookDeleteResult', response);
+    }
+
+    async function getWebhookLogs() {
+      const id = document.getElementById('webhookLogsId').value;
+      if (!id) return alert('Please enter Webhook ID');
+
+      const response = await api('GET', `/api/webhooks/${id}/logs`);
+      showResult('webhookLogsResult', response);
+    }
+
+    async function testWebhook() {
+      const id = document.getElementById('webhookTestId').value;
+      if (!id) return alert('Please enter Webhook ID');
+
+      const response = await api('POST', `/api/webhooks/${id}/test`);
+      showWebhookTestResult('webhookTestResult', response);
+
+      // Refresh received webhook list after test (with slight delay)
+      setTimeout(loadReceivedWebhooks, 500);
+    }
+
+    function showWebhookTestResult(elementId, response) {
+      const el = document.getElementById(elementId);
+      el.classList.add('show');
+
+      if (!response.ok) {
+        showResult(elementId, response);
+        return;
+      }
+
+      const data = response.data.data;
+      const statusClass = data.success ? 'success' : 'error';
+      const statusText = data.success ? 'SUCCESS' : 'FAILED';
+
+      el.innerHTML = `
+        <div class="result-header">
+          <div class="result-status">
+            <span class="status-code ${statusClass}">${statusText}</span>
+            ${data.statusCode ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted);">HTTP ${data.statusCode}</span>` : ''}
+          </div>
+          <span class="result-time">${data.responseTime || 0}ms</span>
+        </div>
+        ${data.webhook ? `
+          <div style="padding: 12px 16px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">TARGET WEBHOOK</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+              <span style="color: var(--accent-cyan);">#${data.webhook.id}</span>
+              <span style="color: var(--accent-orange); margin-left: 8px;">${data.webhook.eventType}</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; word-break: break-all;">${data.webhook.url}</div>
+          </div>
+        ` : ''}
+        ${data.sentPayload ? `
+          <div style="padding: 12px 16px; background: var(--bg-secondary);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">SENT PAYLOAD</div>
+            <pre style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all; margin: 0;">${JSON.stringify(data.sentPayload, null, 2)}</pre>
+          </div>
+        ` : ''}
+        ${data.error ? `
+          <div style="padding: 12px 16px; background: rgba(248, 81, 73, 0.1); color: var(--accent-red);">
+            <div style="font-size: 0.75rem; margin-bottom: 4px;">ERROR</div>
+            <div style="font-size: 0.85rem;">${data.error}</div>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    async function simulateWebhook() {
+      const event = document.getElementById('simulateEventType').value;
+      let data;
+
+      try {
+        data = JSON.parse(document.getElementById('simulateData').value);
+      } catch {
+        return alert('Please enter valid JSON format');
+      }
+
+      const response = await api('POST', '/api/webhooks/simulate', { event, data });
+      showResult('webhookSimulateResult', response);
+    }
+
+    // ============================================
+    // Received Webhooks
+    // ============================================
+    let autoRefreshInterval = null;
+
+    async function loadReceivedWebhooks() {
+      const response = await api('GET', '/api/webhooks/received');
+      const container = document.getElementById('receivedWebhooksList');
+      const countEl = document.getElementById('webhookReceivedCount');
+
+      if (response.ok && response.data.data) {
+        const webhooks = response.data.data;
+        countEl.textContent = webhooks.length > 0 ? `(${webhooks.length})` : '';
+
+        if (webhooks.length === 0) {
+          container.innerHTML = '<div class="empty-state">Run a webhook test to see results here</div>';
+          return;
+        }
+
+        container.innerHTML = webhooks.map(wh => `
+          <div class="webhook-item" data-id="${wh.id}">
+            <div class="webhook-item-header" onclick="toggleWebhookDetail('${wh.id}')">
+              <div class="webhook-item-info">
+                <div class="webhook-status-dot ${wh.valid ? 'valid' : 'invalid'}"></div>
+                <span class="webhook-item-id">${wh.id}</span>
+                <span class="webhook-item-time">${formatTime(wh.receivedAt)}</span>
+              </div>
+              <div class="webhook-event-badges">
+                ${wh.events.some(e => e.isTest) ? '<span class="webhook-event-badge" style="background: rgba(255, 123, 84, 0.15); color: var(--accent-orange);">TEST</span>' : ''}
+                ${wh.events.map(e => `<span class="webhook-event-badge">${e.event}</span>`).join('')}
+                ${wh.error ? '<span class="webhook-event-badge" style="background: rgba(248, 81, 73, 0.15); color: var(--accent-red);">ERROR</span>' : ''}
+              </div>
+            </div>
+            <div class="webhook-item-body">
+              ${wh.error ? `<div class="webhook-error">${wh.error}</div>` : ''}
+              ${wh.events.map(e => `
+                <div class="webhook-event-detail">
+                  <div class="webhook-event-type">${e.event}</div>
+                  <div class="webhook-event-data">${JSON.stringify(e.data, null, 2)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function toggleWebhookDetail(id) {
+      const item = document.querySelector(`.webhook-item[data-id="${id}"]`);
+      if (item) {
+        item.classList.toggle('expanded');
+      }
+    }
+
+    function formatTime(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    async function clearReceivedWebhooks() {
+      if (!confirm('Are you sure you want to clear all received webhooks?')) return;
+      await api('DELETE', '/api/webhooks/received');
+      loadReceivedWebhooks();
+    }
+
+    function setupAutoRefresh() {
+      const toggle = document.getElementById('autoRefreshToggle');
+
+      if (toggle.checked) {
+        autoRefreshInterval = setInterval(loadReceivedWebhooks, 2000);
+      }
+
+      toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+          autoRefreshInterval = setInterval(loadReceivedWebhooks, 2000);
+        } else {
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+        }
+      });
+    }
+
+    // Update sample data when event type changes
+    document.getElementById('simulateEventType')?.addEventListener('change', (e) => {
+      const sampleData = {
+        'coupon.redeemed': { couponCode: 'TEST123', userId: 'test_user', creatorKey: 'ABCDE' },
+        'payment.created': { transactionId: 'txn_123', userId: 'test_user', amount: 4900, currency: 'KRW' },
+        'payment.refunded': { transactionId: 'txn_123', userId: 'test_user', amount: 4900 },
+        'sponsor.created': { userId: 'test_user', creatorKey: 'ABCDE', campaignId: 'camp_123' },
+        'sponsor.changed': { userId: 'test_user', oldCreatorKey: 'ABCDE', newCreatorKey: 'FGHIJ' },
+      };
+      document.getElementById('simulateData').value = JSON.stringify(sampleData[e.target.value] || {}, null, 2);
+    });
+
+    // Initial setup
+    document.addEventListener('DOMContentLoaded', () => {
+      generateTxnId();
+      setupAutoRefresh();
+      loadReceivedWebhooks();
+    });
+  </script>
+</body>
+</html>

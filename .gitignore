@@ -1,0 +1,26 @@
+# Environment
+.env
+.pid
+
+# Binaries
+playcamp-go-sdk-example
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
