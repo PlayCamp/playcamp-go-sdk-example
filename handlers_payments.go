@@ -23,6 +23,7 @@ func (a *app) handleCreatePayment(w http.ResponseWriter, r *http.Request) {
 		Receipt          *string                   `json:"receipt,omitempty"`
 		CampaignID       *string                   `json:"campaignId,omitempty"`
 		CreatorKey       *string                   `json:"creatorKey,omitempty"`
+		CallbackID       string                    `json:"callbackId,omitempty"`
 		IsTest           *bool                     `json:"isTest,omitempty"`
 	}
 	if err := decodeJSON(r, &body); err != nil {
@@ -57,6 +58,7 @@ func (a *app) handleCreatePayment(w http.ResponseWriter, r *http.Request) {
 		Receipt:          body.Receipt,
 		CampaignID:       body.CampaignID,
 		CreatorKey:       body.CreatorKey,
+		CallbackID:       body.CallbackID,
 		IsTest:           body.IsTest,
 	})
 	if err != nil {
@@ -103,7 +105,8 @@ func (a *app) handleRefundPayment(w http.ResponseWriter, r *http.Request) {
 	txnID := chi.URLParam(r, "transactionId")
 
 	var body struct {
-		IsTest *bool `json:"isTest,omitempty"`
+		CallbackID string `json:"callbackId,omitempty"`
+		IsTest     *bool  `json:"isTest,omitempty"`
 	}
 	// Body is optional for refund.
 	_ = decodeJSON(r, &body)
@@ -112,8 +115,11 @@ func (a *app) handleRefundPayment(w http.ResponseWriter, r *http.Request) {
 	sdk := a.getSDK(isTest)
 
 	var opts *playcamp.RefundPaymentOptions
-	if body.IsTest != nil {
-		opts = &playcamp.RefundPaymentOptions{IsTest: body.IsTest}
+	if body.IsTest != nil || body.CallbackID != "" {
+		opts = &playcamp.RefundPaymentOptions{
+			CallbackID: body.CallbackID,
+			IsTest:     body.IsTest,
+		}
 	}
 
 	payment, err := sdk.Payments.Refund(r.Context(), txnID, opts)

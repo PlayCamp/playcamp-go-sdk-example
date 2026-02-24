@@ -40,6 +40,7 @@ func (a *app) handleRedeemCoupon(w http.ResponseWriter, r *http.Request) {
 		CouponCode   string  `json:"couponCode"`
 		UserID       string  `json:"userId"`
 		GameUserUUID *string `json:"gameUserUuid,omitempty"`
+		CallbackID   string  `json:"callbackId,omitempty"`
 		IsTest       *bool   `json:"isTest,omitempty"`
 	}
 	if err := decodeJSON(r, &body); err != nil {
@@ -54,6 +55,7 @@ func (a *app) handleRedeemCoupon(w http.ResponseWriter, r *http.Request) {
 		CouponCode:   body.CouponCode,
 		UserID:       body.UserID,
 		GameUserUUID: body.GameUserUUID,
+		CallbackID:   body.CallbackID,
 		IsTest:       body.IsTest,
 	})
 	if err != nil {

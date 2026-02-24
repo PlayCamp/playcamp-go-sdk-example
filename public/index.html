@@ -1755,6 +1755,7 @@
                   <option value="payment.refunded">payment.refunded</option>
                   <option value="sponsor.created">sponsor.created</option>
                   <option value="sponsor.changed">sponsor.changed</option>
+                  <option value="sponsor.ended">sponsor.ended</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1935,6 +1936,7 @@
                   <option value="payment.refunded">payment.refunded</option>
                   <option value="sponsor.created">sponsor.created</option>
                   <option value="sponsor.changed">sponsor.changed</option>
+                  <option value="sponsor.ended">sponsor.ended</option>
                 </select>
               </div>
               <div class="form-group">
@@ -2565,6 +2567,7 @@
         'payment.refunded': { transactionId: 'txn_123', userId: 'test_user', amount: 4900 },
         'sponsor.created': { userId: 'test_user', creatorKey: 'ABCDE', campaignId: 'camp_123' },
         'sponsor.changed': { userId: 'test_user', oldCreatorKey: 'ABCDE', newCreatorKey: 'FGHIJ' },
+        'sponsor.ended': { userId: 'test_user', campaignId: 'camp_123', creatorKey: 'ABCDE' },
       };
       document.getElementById('simulateData').value = JSON.stringify(sampleData[e.target.value] || {}, null, 2);
     });

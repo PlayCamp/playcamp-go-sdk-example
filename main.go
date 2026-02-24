@@ -134,6 +134,9 @@ func main() {
 	r.Get("/api/webhooks/{id}/logs", a.handleGetWebhookLogs)
 	r.Post("/api/webhooks/{id}/test", a.handleTestWebhook)
 
+	// --- WebView ---
+	r.Post("/webview/token", a.handleWebviewToken)
+
 	// --- Webhook Receiver ---
 	r.Post("/webhooks/playcamp", a.handleWebhookReceiver)
 
@@ -210,6 +213,9 @@ API Endpoints:
    DELETE /api/webhooks/:id       - Delete webhook
    GET  /api/webhooks/:id/logs    - Get webhook logs
    POST /api/webhooks/:id/test    - Test webhook
+
+[WebView]
+   POST /webview/token             - Create WebView OTT token
 
 [Webhook Receiver]
    POST /webhooks/playcamp        - Receive webhooks
