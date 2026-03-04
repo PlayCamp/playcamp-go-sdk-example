@@ -1728,6 +1728,53 @@
               </div>
             </div>
           </div>
+
+          <!-- Bulk Payment -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Bulk Payment
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Payments (JSON Array)</label>
+                <textarea class="form-input" id="bulkPayments" rows="6" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">[
+  {
+    "userId": "user-001",
+    "transactionId": "txn-bulk-001",
+    "productId": "gem-100",
+    "amount": 9900,
+    "currency": "KRW",
+    "platform": "iOS",
+    "purchasedAt": "2026-03-01T10:00:00.000Z"
+  }
+]</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="bulkPaymentCallbackId" placeholder="Callback ID">
+              </div>
+              <button class="btn btn-primary" onclick="createBulkPayment()">Create Bulk Payment</button>
+              <div id="bulkPaymentResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">CreateBulk</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="property">CreateBulkPaymentParams</span>{
+  <span class="property">Payments</span>: []<span class="variable">playcamp</span>.<span class="property">CreatePaymentParams</span>{...},
+  <span class="property">CallbackID</span>: <span class="string">"bulk-import-001"</span>,
+})
+
+<span class="comment">// result.TotalRequested, result.Successful, result.Failed, result.Skipped</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1783,6 +1830,7 @@
                   <option value="coupon.redeemed">coupon.redeemed</option>
                   <option value="payment.created">payment.created</option>
                   <option value="payment.refunded">payment.refunded</option>
+                  <option value="payment.bulk_created">payment.bulk_created</option>
                   <option value="sponsor.created">sponsor.created</option>
                   <option value="sponsor.changed">sponsor.changed</option>
                   <option value="sponsor.ended">sponsor.ended</option>
@@ -1964,6 +2012,7 @@
                   <option value="coupon.redeemed">coupon.redeemed</option>
                   <option value="payment.created">payment.created</option>
                   <option value="payment.refunded">payment.refunded</option>
+                  <option value="payment.bulk_created">payment.bulk_created</option>
                   <option value="sponsor.created">sponsor.created</option>
                   <option value="sponsor.changed">sponsor.changed</option>
                   <option value="sponsor.ended">sponsor.ended</option>
@@ -2426,6 +2475,23 @@
       showResult('paymentRefundResult', response);
     }
 
+    async function createBulkPayment() {
+      const paymentsText = document.getElementById('bulkPayments').value;
+      let payments;
+      try {
+        payments = JSON.parse(paymentsText);
+      } catch (e) {
+        return alert('Invalid JSON format for payments array');
+      }
+      if (!Array.isArray(payments) || payments.length === 0) return alert('Payments must be a non-empty array');
+
+      const callbackId = document.getElementById('bulkPaymentCallbackId').value;
+      const body = { payments };
+      if (callbackId) body.callbackId = callbackId;
+      const response = await api('POST', '/api/payments/bulk', body);
+      showResult('bulkPaymentResult', response);
+    }
+
     // ============================================
     // WebView
     // ============================================
@@ -2698,6 +2764,7 @@
         'coupon.redeemed': { couponCode: 'TEST123', userId: 'test_user', creatorKey: 'ABCDE' },
         'payment.created': { transactionId: 'txn_123', userId: 'test_user', amount: 4900, currency: 'KRW' },
         'payment.refunded': { transactionId: 'txn_123', userId: 'test_user', amount: 4900 },
+        'payment.bulk_created': { totalRequested: 10, successful: 8, failed: 1, skipped: 1, transactionIds: ['txn_001', 'txn_002'] },
         'sponsor.created': { userId: 'test_user', creatorKey: 'ABCDE', campaignId: 'camp_123' },
         'sponsor.changed': { userId: 'test_user', oldCreatorKey: 'ABCDE', newCreatorKey: 'FGHIJ' },
         'sponsor.ended': { userId: 'test_user', campaignId: 'camp_123', creatorKey: 'ABCDE' },

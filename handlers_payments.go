@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -98,6 +100,86 @@ func (a *app) handleGetUserPayments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// handleCreateBulkPayment handles POST /api/payments/bulk
+func (a *app) handleCreateBulkPayment(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Payments   []json.RawMessage `json:"payments"`
+		CallbackID string            `json:"callbackId,omitempty"`
+		IsTest     *bool             `json:"isTest,omitempty"`
+	}
+	if err := decodeJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
+
+	if len(body.Payments) == 0 {
+		writeError(w, http.StatusBadRequest, "payments array is required and must not be empty")
+		return
+	}
+
+	isTest := body.IsTest != nil && *body.IsTest
+	sdk := a.getSDK(isTest)
+
+	// Parse each payment
+	var payments []playcamp.CreatePaymentParams
+	for i, raw := range body.Payments {
+		var p struct {
+			UserID           string                     `json:"userId"`
+			TransactionID    string                     `json:"transactionId"`
+			ProductID        string                     `json:"productId"`
+			ProductName      *string                    `json:"productName,omitempty"`
+			Amount           float64                    `json:"amount"`
+			Currency         string                     `json:"currency"`
+			Platform         playcamp.PaymentPlatform   `json:"platform"`
+			DistributionType *playcamp.DistributionType `json:"distributionType,omitempty"`
+			PurchasedAt      *string                    `json:"purchasedAt,omitempty"`
+			Receipt          *string                    `json:"receipt,omitempty"`
+			CampaignID       *string                    `json:"campaignId,omitempty"`
+			CreatorKey       *string                    `json:"creatorKey,omitempty"`
+		}
+		if err := json.Unmarshal(raw, &p); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid payment at index "+strconv.Itoa(i))
+			return
+		}
+
+		purchasedAt := time.Now().UTC()
+		if p.PurchasedAt != nil && *p.PurchasedAt != "" {
+			parsed, err := time.Parse(time.RFC3339, *p.PurchasedAt)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "invalid purchasedAt at index "+strconv.Itoa(i))
+				return
+			}
+			purchasedAt = parsed
+		}
+
+		payments = append(payments, playcamp.CreatePaymentParams{
+			UserID:           p.UserID,
+			TransactionID:    p.TransactionID,
+			ProductID:        p.ProductID,
+			ProductName:      p.ProductName,
+			Amount:           p.Amount,
+			Currency:         p.Currency,
+			Platform:         p.Platform,
+			DistributionType: p.DistributionType,
+			PurchasedAt:      purchasedAt,
+			Receipt:          p.Receipt,
+			CampaignID:       p.CampaignID,
+			CreatorKey:       p.CreatorKey,
+		})
+	}
+
+	result, err := sdk.Payments.CreateBulk(r.Context(), playcamp.CreateBulkPaymentParams{
+		Payments:   payments,
+		CallbackID: body.CallbackID,
+		IsTest:     body.IsTest,
+	})
+	if err != nil {
+		handleSDKError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, result)
 }
 
 // handleRefundPayment handles POST /api/payments/{transactionId}/refund

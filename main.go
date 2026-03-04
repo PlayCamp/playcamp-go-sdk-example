@@ -115,6 +115,7 @@ func main() {
 
 	// --- Payments (literal path before parameterized) ---
 	r.Post("/api/payments", a.handleCreatePayment)
+	r.Post("/api/payments/bulk", a.handleCreateBulkPayment)
 	r.Get("/api/payments/user/{userId}", a.handleGetUserPayments)
 	r.Get("/api/payments/{transactionId}", a.handleGetPayment)
 	r.Post("/api/payments/{transactionId}/refund", a.handleRefundPayment)
@@ -202,6 +203,7 @@ API Endpoints:
 
 [Payments]
    POST /api/payments                    - Create payment
+   POST /api/payments/bulk               - Create bulk payments
    GET  /api/payments/:txnId             - Get payment
    GET  /api/payments/user/:userId       - Get user payments
    POST /api/payments/:txnId/refund      - Refund payment
