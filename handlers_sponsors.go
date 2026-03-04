@@ -26,6 +26,7 @@ func (a *app) handleCreateSponsor(w http.ResponseWriter, r *http.Request) {
 		UserID     string  `json:"userId"`
 		CreatorKey string  `json:"creatorKey"`
 		CampaignID *string `json:"campaignId,omitempty"`
+		CallbackID string  `json:"callbackId,omitempty"`
 		IsTest     *bool   `json:"isTest,omitempty"`
 	}
 	if err := decodeJSON(r, &body); err != nil {
@@ -40,6 +41,7 @@ func (a *app) handleCreateSponsor(w http.ResponseWriter, r *http.Request) {
 		UserID:     body.UserID,
 		CreatorKey: body.CreatorKey,
 		CampaignID: body.CampaignID,
+		CallbackID: body.CallbackID,
 		IsTest:     body.IsTest,
 	})
 	if err != nil {
@@ -56,6 +58,7 @@ func (a *app) handleUpdateSponsor(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		CampaignID    *string `json:"campaignId,omitempty"`
 		NewCreatorKey string  `json:"newCreatorKey"`
+		CallbackID    string  `json:"callbackId,omitempty"`
 		IsTest        *bool   `json:"isTest,omitempty"`
 	}
 	if err := decodeJSON(r, &body); err != nil {
@@ -69,6 +72,7 @@ func (a *app) handleUpdateSponsor(w http.ResponseWriter, r *http.Request) {
 	sponsor, err := sdk.Sponsors.Update(r.Context(), userID, playcamp.UpdateSponsorParams{
 		CampaignID:    body.CampaignID,
 		NewCreatorKey: body.NewCreatorKey,
+		CallbackID:    body.CallbackID,
 		IsTest:        body.IsTest,
 	})
 	if err != nil {
@@ -83,9 +87,18 @@ func (a *app) handleDeleteSponsor(w http.ResponseWriter, r *http.Request) {
 	sdk := a.getSDK(isTestFromQuery(r))
 	userID := chi.URLParam(r, "userId")
 
+	campaignID := r.URL.Query().Get("campaignId")
+	callbackID := r.URL.Query().Get("callbackId")
+
 	var opts *playcamp.DeleteSponsorOptions
-	if campaignID := r.URL.Query().Get("campaignId"); campaignID != "" {
-		opts = &playcamp.DeleteSponsorOptions{CampaignID: playcamp.String(campaignID)}
+	if campaignID != "" || callbackID != "" {
+		opts = &playcamp.DeleteSponsorOptions{}
+		if campaignID != "" {
+			opts.CampaignID = playcamp.String(campaignID)
+		}
+		if callbackID != "" {
+			opts.CallbackID = callbackID
+		}
 	}
 
 	if err := sdk.Sponsors.Delete(r.Context(), userID, opts); err != nil {

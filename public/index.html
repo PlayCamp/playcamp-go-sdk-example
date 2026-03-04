@@ -972,6 +972,12 @@
           <span class="nav-text">Webhooks</span>
           <span class="nav-badge">7</span>
         </div>
+
+        <div class="nav-item" onclick="switchTab('webview')">
+          <div class="nav-icon">V</div>
+          <span class="nav-text">WebView</span>
+          <span class="nav-badge">1</span>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -1271,6 +1277,10 @@
                 <label class="form-label">User ID</label>
                 <input type="text" class="form-input" id="redeemUserId" placeholder="User ID" value="test_user">
               </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="redeemCallbackId" placeholder="Callback ID">
+              </div>
               <button class="btn btn-primary" onclick="redeemCoupon()">Redeem Coupon</button>
               <div id="redeemCouponResult" class="result-panel"></div>
               <div class="sdk-code">
@@ -1389,6 +1399,10 @@
                 <label class="form-label">Campaign ID (Optional)</label>
                 <input type="text" class="form-input" id="sponsorCampaignId" placeholder="Campaign ID">
               </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="sponsorCreateCallbackId" placeholder="Callback ID">
+              </div>
               <button class="btn btn-primary" onclick="createSponsor()">Create Sponsor</button>
               <div id="sponsorCreateResult" class="result-panel"></div>
               <div class="sdk-code">
@@ -1428,6 +1442,10 @@
                 <label class="form-label">New Creator Key</label>
                 <input type="text" class="form-input" id="sponsorNewCreatorKey" placeholder="New Creator Key" maxlength="5">
               </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="sponsorUpdateCallbackId" placeholder="Callback ID">
+              </div>
               <button class="btn btn-primary" onclick="updateSponsor()">Update Sponsor</button>
               <div id="sponsorUpdateResult" class="result-panel"></div>
               <div class="sdk-code">
@@ -1461,6 +1479,10 @@
               <div class="form-group">
                 <label class="form-label">Campaign ID (Optional)</label>
                 <input type="text" class="form-input" id="sponsorDeleteCampaignId" placeholder="Campaign ID">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="sponsorDeleteCallbackId" placeholder="Callback ID">
               </div>
               <button class="btn btn-danger" onclick="deleteSponsor()">Delete Sponsor</button>
               <div id="sponsorDeleteResult" class="result-panel"></div>
@@ -1583,6 +1605,10 @@
                   <option value="Web">Web</option>
                 </select>
               </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="paymentCallbackId" placeholder="Callback ID">
+              </div>
               <button class="btn btn-primary" onclick="createPayment()">Create Payment</button>
               <div id="paymentCreateResult" class="result-panel"></div>
               <div class="sdk-code">
@@ -1683,6 +1709,10 @@
                 <label class="form-label">Transaction ID</label>
                 <input type="text" class="form-input" id="paymentRefundTxnId" placeholder="Transaction ID">
               </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="paymentRefundCallbackId" placeholder="Callback ID">
+              </div>
               <button class="btn btn-danger" onclick="refundPayment()">Refund Payment</button>
               <div id="paymentRefundResult" class="result-panel"></div>
               <div class="sdk-code">
@@ -1694,6 +1724,53 @@
                   <pre><span class="variable">payment</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">Refund</span>(<span class="variable">ctx</span>, <span class="string">"txn_abc123"</span>, <span class="keyword">nil</span>)
 
 <span class="comment">// payment.Status == "REFUNDED"</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Payment -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Bulk Payment
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Payments (JSON Array)</label>
+                <textarea class="form-input" id="bulkPayments" rows="6" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">[
+  {
+    "userId": "user-001",
+    "transactionId": "txn-bulk-001",
+    "productId": "gem-100",
+    "amount": 9900,
+    "currency": "KRW",
+    "platform": "iOS",
+    "purchasedAt": "2026-03-01T10:00:00.000Z"
+  }
+]</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Callback ID (Optional)</label>
+                <input type="text" class="form-input" id="bulkPaymentCallbackId" placeholder="Callback ID">
+              </div>
+              <button class="btn btn-primary" onclick="createBulkPayment()">Create Bulk Payment</button>
+              <div id="bulkPaymentResult" class="result-panel"></div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Payments</span>.<span class="function">CreateBulk</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="property">CreateBulkPaymentParams</span>{
+  <span class="property">Payments</span>: []<span class="variable">playcamp</span>.<span class="property">CreatePaymentParams</span>{...},
+  <span class="property">CallbackID</span>: <span class="string">"bulk-import-001"</span>,
+})
+
+<span class="comment">// result.TotalRequested, result.Successful, result.Failed, result.Skipped</span></pre>
                 </div>
               </div>
             </div>
@@ -1753,8 +1830,10 @@
                   <option value="coupon.redeemed">coupon.redeemed</option>
                   <option value="payment.created">payment.created</option>
                   <option value="payment.refunded">payment.refunded</option>
+                  <option value="payment.bulk_created">payment.bulk_created</option>
                   <option value="sponsor.created">sponsor.created</option>
                   <option value="sponsor.changed">sponsor.changed</option>
+                  <option value="sponsor.ended">sponsor.ended</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1933,8 +2012,10 @@
                   <option value="coupon.redeemed">coupon.redeemed</option>
                   <option value="payment.created">payment.created</option>
                   <option value="payment.refunded">payment.refunded</option>
+                  <option value="payment.bulk_created">payment.bulk_created</option>
                   <option value="sponsor.created">sponsor.created</option>
                   <option value="sponsor.changed">sponsor.changed</option>
+                  <option value="sponsor.ended">sponsor.ended</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1967,6 +2048,58 @@
             <div class="card-body">
               <div id="receivedWebhooksList" style="max-height: 400px; overflow-y: auto;">
                 <div class="empty-state">Run a webhook test to see results here</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- WebView Tab -->
+      <div id="tab-webview" class="tab-content">
+        <div class="page-header">
+          <h1 class="page-title">
+            <span class="page-title-icon">V</span>
+            WebView
+          </h1>
+          <p class="page-description">Generate One-Time Tokens for WebView authentication</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-title-dot"></div>
+                Generate OTT
+              </div>
+              <span class="card-method post">POST</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-input" id="webviewUserId" placeholder="User ID" value="test_user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campaign ID (Optional)</label>
+                <input type="text" class="form-input" id="webviewCampaignId" placeholder="Campaign ID">
+              </div>
+              <button class="btn btn-primary" onclick="generateOTT()">Generate OTT</button>
+              <div id="webviewOttResult" class="result-panel"></div>
+              <div id="webviewActions" style="display:none; margin-top: 16px;">
+                <button class="btn btn-primary" onclick="openWebviewNewWindow()" style="width: 100%;">Open WebView</button>
+                <div id="webviewUrlDisplay" style="margin-top: 8px; padding: 10px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; word-break: break-all; color: var(--text-secondary);"></div>
+              </div>
+              <div class="sdk-code">
+                <div class="sdk-code-header">
+                  <span class="sdk-code-label">SDK Code</span>
+                  <span class="sdk-code-toggle" onclick="toggleCode(this)">Show</span>
+                </div>
+                <div class="sdk-code-block">
+                  <pre><span class="variable">result</span>, <span class="variable">err</span> := <span class="variable">sdk</span>.<span class="property">Webview</span>.<span class="function">CreateOTT</span>(<span class="variable">ctx</span>, <span class="variable">playcamp</span>.<span class="function">WebviewOttParams</span>{
+  <span class="property">UserID</span>:     <span class="string">"user_123"</span>,
+  <span class="property">CampaignID</span>: <span class="string">"campaign_001"</span>,
+})
+
+<span class="comment">// result.OTT, result.ExpiresAt</span></pre>
+                </div>
               </div>
             </div>
           </div>
@@ -2185,7 +2318,11 @@
       const userId = document.getElementById('redeemUserId').value;
       if (!code || !userId) return alert('Please enter Coupon code and User ID');
 
-      const response = await api('POST', '/api/coupons/redeem', { couponCode: code, userId });
+      const body = { couponCode: code, userId };
+      const callbackId = document.getElementById('redeemCallbackId').value;
+      if (callbackId) body.callbackId = callbackId;
+
+      const response = await api('POST', '/api/coupons/redeem', body);
       showResult('redeemCouponResult', response);
     }
 
@@ -2218,6 +2355,8 @@
 
       const body = { userId, creatorKey };
       if (campaignId) body.campaignId = campaignId;
+      const callbackId = document.getElementById('sponsorCreateCallbackId').value;
+      if (callbackId) body.callbackId = callbackId;
 
       const response = await api('POST', '/api/sponsors', body);
       showResult('sponsorCreateResult', response);
@@ -2234,6 +2373,8 @@
 
       const body = { newCreatorKey };
       if (campaignId) body.campaignId = campaignId;
+      const callbackId = document.getElementById('sponsorUpdateCallbackId').value;
+      if (callbackId) body.callbackId = callbackId;
 
       const response = await api('PUT', `/api/sponsors/${userId}`, body);
       showResult('sponsorUpdateResult', response);
@@ -2246,7 +2387,11 @@
       if (!confirm('Are you sure you want to delete?')) return;
 
       const campaignId = document.getElementById('sponsorDeleteCampaignId').value;
-      const query = campaignId ? `?campaignId=${campaignId}` : '';
+      const callbackId = document.getElementById('sponsorDeleteCallbackId').value;
+      const params = [];
+      if (campaignId) params.push(`campaignId=${campaignId}`);
+      if (callbackId) params.push(`callbackId=${callbackId}`);
+      const query = params.length > 0 ? `?${params.join('&')}` : '';
       const response = await api('DELETE', `/api/sponsors/${userId}${query}`);
       showResult('sponsorDeleteResult', response);
     }
@@ -2275,12 +2420,13 @@
       const amount = parseFloat(document.getElementById('paymentAmount').value);
       const currency = document.getElementById('paymentCurrency').value;
       const platform = document.getElementById('paymentPlatform').value;
+      const callbackId = document.getElementById('paymentCallbackId').value;
 
       if (!userId || !transactionId || !productId || !amount) {
         return alert('Please fill in all required fields');
       }
 
-      const response = await api('POST', '/api/payments', {
+      const body = {
         userId,
         transactionId,
         productId,
@@ -2288,7 +2434,10 @@
         amount,
         currency,
         platform,
-      });
+      };
+      if (callbackId) body.callbackId = callbackId;
+
+      const response = await api('POST', '/api/payments', body);
       showResult('paymentCreateResult', response);
 
       if (response.ok) {
@@ -2320,8 +2469,60 @@
 
       if (!confirm('Are you sure you want to refund?')) return;
 
-      const response = await api('POST', `/api/payments/${txnId}/refund`);
+      const callbackId = document.getElementById('paymentRefundCallbackId').value;
+      const body = callbackId ? { callbackId } : null;
+      const response = await api('POST', `/api/payments/${txnId}/refund`, body);
       showResult('paymentRefundResult', response);
+    }
+
+    async function createBulkPayment() {
+      const paymentsText = document.getElementById('bulkPayments').value;
+      let payments;
+      try {
+        payments = JSON.parse(paymentsText);
+      } catch (e) {
+        return alert('Invalid JSON format for payments array');
+      }
+      if (!Array.isArray(payments) || payments.length === 0) return alert('Payments must be a non-empty array');
+
+      const callbackId = document.getElementById('bulkPaymentCallbackId').value;
+      const body = { payments };
+      if (callbackId) body.callbackId = callbackId;
+      const response = await api('POST', '/api/payments/bulk', body);
+      showResult('bulkPaymentResult', response);
+    }
+
+    // ============================================
+    // WebView
+    // ============================================
+    let webviewUrl = '';
+
+    async function generateOTT() {
+      const userId = document.getElementById('webviewUserId').value;
+      if (!userId) return alert('Please enter User ID');
+
+      const campaignId = document.getElementById('webviewCampaignId').value;
+      const body = { userId };
+      if (campaignId) body.campaignId = campaignId;
+
+      const response = await api('POST', '/webview/token', body);
+      showResult('webviewOttResult', response);
+
+      if (response.ok && response.data?.data?.ott) {
+        const ott = response.data.data.ott;
+        const apiUrl = location.protocol + '//' + location.hostname + ':3003';
+        webviewUrl = apiUrl + '/webview/?ott=' + encodeURIComponent(ott);
+        if (campaignId) webviewUrl += '&tabs=sponsor,coupon';
+
+        const actions = document.getElementById('webviewActions');
+        const urlDisplay = document.getElementById('webviewUrlDisplay');
+        urlDisplay.textContent = webviewUrl;
+        actions.style.display = 'block';
+      }
+    }
+
+    function openWebviewNewWindow() {
+      if (webviewUrl) window.open(webviewUrl, 'playcamp-webview', 'width=420,height=780');
     }
 
     // ============================================
@@ -2563,8 +2764,10 @@
         'coupon.redeemed': { couponCode: 'TEST123', userId: 'test_user', creatorKey: 'ABCDE' },
         'payment.created': { transactionId: 'txn_123', userId: 'test_user', amount: 4900, currency: 'KRW' },
         'payment.refunded': { transactionId: 'txn_123', userId: 'test_user', amount: 4900 },
+        'payment.bulk_created': { totalRequested: 10, successful: 8, failed: 1, skipped: 1, transactionIds: ['txn_001', 'txn_002'] },
         'sponsor.created': { userId: 'test_user', creatorKey: 'ABCDE', campaignId: 'camp_123' },
         'sponsor.changed': { userId: 'test_user', oldCreatorKey: 'ABCDE', newCreatorKey: 'FGHIJ' },
+        'sponsor.ended': { userId: 'test_user', campaignId: 'camp_123', creatorKey: 'ABCDE' },
       };
       document.getElementById('simulateData').value = JSON.stringify(sampleData[e.target.value] || {}, null, 2);
     });

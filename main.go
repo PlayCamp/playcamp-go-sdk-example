@@ -115,6 +115,7 @@ func main() {
 
 	// --- Payments (literal path before parameterized) ---
 	r.Post("/api/payments", a.handleCreatePayment)
+	r.Post("/api/payments/bulk", a.handleCreateBulkPayment)
 	r.Get("/api/payments/user/{userId}", a.handleGetUserPayments)
 	r.Get("/api/payments/{transactionId}", a.handleGetPayment)
 	r.Post("/api/payments/{transactionId}/refund", a.handleRefundPayment)
@@ -133,6 +134,9 @@ func main() {
 	r.Delete("/api/webhooks/{id}", a.handleDeleteWebhook)
 	r.Get("/api/webhooks/{id}/logs", a.handleGetWebhookLogs)
 	r.Post("/api/webhooks/{id}/test", a.handleTestWebhook)
+
+	// --- WebView ---
+	r.Post("/webview/token", a.handleWebviewToken)
 
 	// --- Webhook Receiver ---
 	r.Post("/webhooks/playcamp", a.handleWebhookReceiver)
@@ -199,6 +203,7 @@ API Endpoints:
 
 [Payments]
    POST /api/payments                    - Create payment
+   POST /api/payments/bulk               - Create bulk payments
    GET  /api/payments/:txnId             - Get payment
    GET  /api/payments/user/:userId       - Get user payments
    POST /api/payments/:txnId/refund      - Refund payment
@@ -210,6 +215,9 @@ API Endpoints:
    DELETE /api/webhooks/:id       - Delete webhook
    GET  /api/webhooks/:id/logs    - Get webhook logs
    POST /api/webhooks/:id/test    - Test webhook
+
+[WebView]
+   POST /webview/token             - Create WebView OTT token
 
 [Webhook Receiver]
    POST /webhooks/playcamp        - Receive webhooks
