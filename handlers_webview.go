@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
+	"net/url"
+	"strings"
 
 	playcamp "github.com/playcamp/playcamp-go-sdk"
 )
@@ -35,5 +38,16 @@ func (a *app) handleWebviewToken(w http.ResponseWriter, r *http.Request) {
 		handleSDKError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, result)
+
+	// Build the full WebView URL from the configured SDK API host so it works
+	// regardless of SDK_API_URL (local, sandbox, live, custom).
+	base := strings.TrimRight(a.apiBaseURL, "/")
+	webviewURL := base + "/webview/?ott=" + url.QueryEscape(result.OTT)
+	if body.CampaignID != "" {
+		webviewURL += "&tabs=sponsor,coupon"
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{"data": result, "webviewUrl": webviewURL})
 }

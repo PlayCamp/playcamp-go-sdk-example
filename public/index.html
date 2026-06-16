@@ -2510,9 +2510,15 @@
 
       if (response.ok && response.data?.data?.ott) {
         const ott = response.data.data.ott;
-        const apiUrl = location.protocol + '//' + location.hostname + ':3003';
-        webviewUrl = apiUrl + '/webview/?ott=' + encodeURIComponent(ott);
-        if (campaignId) webviewUrl += '&tabs=sponsor,coupon';
+        // Prefer the server-built URL (uses the configured SDK_API_URL host);
+        // fall back to the legacy :3003 guess only if it is missing.
+        if (response.data.webviewUrl) {
+          webviewUrl = response.data.webviewUrl;
+        } else {
+          const apiUrl = location.protocol + '//' + location.hostname + ':3003';
+          webviewUrl = apiUrl + '/webview/?ott=' + encodeURIComponent(ott);
+          if (campaignId) webviewUrl += '&tabs=sponsor,coupon';
+        }
 
         const actions = document.getElementById('webviewActions');
         const urlDisplay = document.getElementById('webviewUrlDisplay');

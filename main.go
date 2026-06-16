@@ -18,6 +18,7 @@ type app struct {
 	server           *playcamp.Server
 	testServer       *playcamp.Server
 	webhookSecret    string
+	apiBaseURL       string
 	receivedWebhooks *webhookStore
 }
 
@@ -57,6 +58,15 @@ func main() {
 		opts = append(opts, playcamp.WithBaseURL(baseURL))
 	}
 
+	// Resolve the effective SDK API base URL (used to build the WebView URL).
+	apiBaseURL := os.Getenv("SDK_API_URL")
+	if apiBaseURL == "" {
+		apiBaseURL = playcamp.EnvironmentURL(playcamp.Environment(env))
+		if apiBaseURL == "" {
+			apiBaseURL = playcamp.EnvironmentURL(playcamp.EnvironmentLive)
+		}
+	}
+
 	if strings.EqualFold(os.Getenv("SDK_DEBUG"), "true") {
 		opts = append(opts, playcamp.WithDebug(playcamp.DebugOptions{
 			Enabled:         true,
@@ -82,6 +92,7 @@ func main() {
 		server:           server,
 		testServer:       testServer,
 		webhookSecret:    webhookSecret,
+		apiBaseURL:       apiBaseURL,
 		receivedWebhooks: newWebhookStore(50),
 	}
 
@@ -120,6 +131,10 @@ func main() {
 	r.Get("/api/payments/{transactionId}", a.handleGetPayment)
 	r.Post("/api/payments/{transactionId}/refund", a.handleRefundPayment)
 
+	// --- Playtime Sessions ---
+	r.Post("/api/playtime-sessions", a.handleCreatePlaytimeSession)
+	r.Post("/api/playtime-sessions/bulk", a.handleCreateBulkPlaytimeSession)
+
 	// --- Webhooks (literal paths before parameterized) ---
 	r.Get("/api/webhooks", a.handleListWebhooks)
 	r.Post("/api/webhooks", a.handleCreateWebhook)
@@ -146,13 +161,7 @@ func main() {
 	r.Handle("/*", fileServer)
 
 	// Print startup banner.
-	effectiveAPIURL := os.Getenv("SDK_API_URL")
-	if effectiveAPIURL == "" {
-		effectiveAPIURL = playcamp.EnvironmentURL(playcamp.Environment(env))
-		if effectiveAPIURL == "" {
-			effectiveAPIURL = playcamp.EnvironmentURL(playcamp.EnvironmentLive)
-		}
-	}
+	effectiveAPIURL := apiBaseURL
 
 	envInfo := fmt.Sprintf("Environment: %s", env)
 	if os.Getenv("SDK_API_URL") != "" {
@@ -207,6 +216,10 @@ API Endpoints:
    GET  /api/payments/:txnId             - Get payment
    GET  /api/payments/user/:userId       - Get user payments
    POST /api/payments/:txnId/refund      - Refund payment
+
+[Playtime Sessions]
+   POST /api/playtime-sessions           - Report a playtime session
+   POST /api/playtime-sessions/bulk      - Report playtime sessions in bulk
 
 [Webhooks]
    GET  /api/webhooks             - List webhooks
