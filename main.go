@@ -120,6 +120,10 @@ func main() {
 	r.Get("/api/payments/{transactionId}", a.handleGetPayment)
 	r.Post("/api/payments/{transactionId}/refund", a.handleRefundPayment)
 
+	// --- Playtime Sessions ---
+	r.Post("/api/playtime-sessions", a.handleCreatePlaytimeSession)
+	r.Post("/api/playtime-sessions/bulk", a.handleCreateBulkPlaytimeSession)
+
 	// --- Webhooks (literal paths before parameterized) ---
 	r.Get("/api/webhooks", a.handleListWebhooks)
 	r.Post("/api/webhooks", a.handleCreateWebhook)
@@ -207,6 +211,10 @@ API Endpoints:
    GET  /api/payments/:txnId             - Get payment
    GET  /api/payments/user/:userId       - Get user payments
    POST /api/payments/:txnId/refund      - Refund payment
+
+[Playtime Sessions]
+   POST /api/playtime-sessions           - Report a playtime session
+   POST /api/playtime-sessions/bulk      - Report playtime sessions in bulk
 
 [Webhooks]
    GET  /api/webhooks             - List webhooks
