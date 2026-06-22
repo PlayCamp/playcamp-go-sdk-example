@@ -12,14 +12,17 @@ import (
 // handleCreatePlaytimeSession handles POST /api/playtime-sessions
 func (a *app) handleCreatePlaytimeSession(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		SessionID       string                 `json:"sessionId"`
-		UserID          string                 `json:"userId"`
-		DurationSeconds int                    `json:"durationSeconds"`
-		StartedAt       string                 `json:"startedAt"`
-		EndedAt         string                 `json:"endedAt"`
-		Metadata        map[string]interface{} `json:"metadata,omitempty"`
-		CallbackID      string                 `json:"callbackId,omitempty"`
-		IsTest          *bool                  `json:"isTest,omitempty"`
+		SessionID       string                   `json:"sessionId"`
+		UserID          string                   `json:"userId"`
+		DurationSeconds int                      `json:"durationSeconds"`
+		StartedAt       string                   `json:"startedAt"`
+		EndedAt         string                   `json:"endedAt"`
+		CampaignID      string                   `json:"campaignId,omitempty"`
+		CreatorKey      string                   `json:"creatorKey,omitempty"`
+		Platform        playcamp.PaymentPlatform `json:"platform,omitempty"`
+		Metadata        map[string]interface{}   `json:"metadata,omitempty"`
+		CallbackID      string                   `json:"callbackId,omitempty"`
+		IsTest          *bool                    `json:"isTest,omitempty"`
 	}
 	if err := decodeJSON(r, &body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON body")
@@ -46,9 +49,14 @@ func (a *app) handleCreatePlaytimeSession(w http.ResponseWriter, r *http.Request
 		DurationSeconds: body.DurationSeconds,
 		StartedAt:       startedAt,
 		EndedAt:         endedAt,
-		Metadata:        body.Metadata,
-		CallbackID:      body.CallbackID,
-		IsTest:          body.IsTest,
+		// Optional attribution overrides (added in SDK v0.0.8). When omitted the
+		// server matches the sponsorship and defaults platform to Other.
+		CampaignID: body.CampaignID,
+		CreatorKey: body.CreatorKey,
+		Platform:   body.Platform,
+		Metadata:   body.Metadata,
+		CallbackID: body.CallbackID,
+		IsTest:     body.IsTest,
 	})
 	if err != nil {
 		handleSDKError(w, err)
@@ -80,12 +88,15 @@ func (a *app) handleCreateBulkPlaytimeSession(w http.ResponseWriter, r *http.Req
 	var sessions []playcamp.CreatePlaytimeSessionParams
 	for i, raw := range body.Sessions {
 		var s struct {
-			SessionID       string                 `json:"sessionId"`
-			UserID          string                 `json:"userId"`
-			DurationSeconds int                    `json:"durationSeconds"`
-			StartedAt       string                 `json:"startedAt"`
-			EndedAt         string                 `json:"endedAt"`
-			Metadata        map[string]interface{} `json:"metadata,omitempty"`
+			SessionID       string                   `json:"sessionId"`
+			UserID          string                   `json:"userId"`
+			DurationSeconds int                      `json:"durationSeconds"`
+			StartedAt       string                   `json:"startedAt"`
+			EndedAt         string                   `json:"endedAt"`
+			CampaignID      string                   `json:"campaignId,omitempty"`
+			CreatorKey      string                   `json:"creatorKey,omitempty"`
+			Platform        playcamp.PaymentPlatform `json:"platform,omitempty"`
+			Metadata        map[string]interface{}   `json:"metadata,omitempty"`
 		}
 		if err := json.Unmarshal(raw, &s); err != nil {
 			writeError(w, http.StatusBadRequest, "invalid session at index "+strconv.Itoa(i))
@@ -109,6 +120,9 @@ func (a *app) handleCreateBulkPlaytimeSession(w http.ResponseWriter, r *http.Req
 			DurationSeconds: s.DurationSeconds,
 			StartedAt:       startedAt,
 			EndedAt:         endedAt,
+			CampaignID:      s.CampaignID,
+			CreatorKey:      s.CreatorKey,
+			Platform:        s.Platform,
 			Metadata:        s.Metadata,
 		})
 	}
